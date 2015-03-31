@@ -1,6 +1,6 @@
 argparse
 ConfigParser
 logging
-import boto
-import paramiko
+boto
+paramiko
 colorlog

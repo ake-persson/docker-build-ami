@@ -37,6 +37,6 @@ setup(
     packages         = find_packages(),
     classifiers      = CLASSIFIERS,
     scripts          = ['scripts/docker-build-ami'],
-    data_files	     = [('/etc', ['etc/docker-build-ami.conf'])]
+    data_files	     = [('/etc', ['etc/docker-build-ami.conf'])],
     install_requires = requires,
 )

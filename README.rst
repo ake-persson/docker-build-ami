@@ -21,10 +21,7 @@ Requires a ~/.boto config file for Credentials:
     aws_access_key_id = <access key>
     aws_secret_access_key = <secret key>
 
-There is a separate config file for the script in either:
-
-/etc/docker-build-ami.conf
-~/.docker-build-ami.conf
+There is a separate config file for the script in either "/etc/docker-build-ami.conf" or "~/.docker-build-ami.conf".
 
 .. code-block::
 
@@ -64,5 +61,5 @@ Usage
 
 Roadmap
 =======
-- Move credentials to cofig file
+- Move credentials to config file
 - Rewrite and cleanup
