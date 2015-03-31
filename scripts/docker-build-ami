@@ -1,0 +1,270 @@
+#!/usr/bin/env python
+
+import argparse
+import ConfigParser
+import logging
+import boto.ec2
+import os
+from os.path import expanduser, join, isfile
+import time
+import socket
+from sys import stdout
+import paramiko
+import uuid
+import datetime
+import tarfile
+import glob
+
+class color:
+    RED = '\033[91m'
+    YELLOW = '\033[33m'
+    CLEAR = '\033[0m'
+
+def check_port(host, port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.connect((host, 22))
+        s.shutdown(socket.SHUT_RDWR)
+        s.close()
+        return True
+    except socket.error as e:
+        return False
+
+# Add support for .dockerignore
+def create_tar_gz():
+    tar = tarfile.open(tmp_dir + '/docker-build-ami.tar.gz', 'w:gz')
+    for name in glob.glob('*'):
+        logger.info('Adding file to %s/docker-build-ami.tar.gz: %s' % (tmp_dir, name))
+        tar.add(name)
+    tar.close()
+
+# Need to quote $var
+def run(c, step, skip, cmd):
+    print '--> {0}Step: {1} Operation: RUN{2}\n{3}'.format(color.YELLOW, step, color.CLEAR, cmd)
+    if skip:
+        print 'Skipping'
+        return
+    print color.YELLOW
+    stdin, stdout, stderr = c.exec_command('sudo -s -- <<EOF\nset -eux\n' + cmd + '\nEOF', get_pty=True)
+    print stdout.read()
+    print stderr.read()
+    print color.CLEAR
+
+    exit_code = stdout.channel.recv_exit_status()
+    if exit_code != 0:
+        print '{0}Exit Code: {1}{2}'.format(color.RED, exit_code, color.CLEAR)
+        exit()
+
+# Get arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('-c', '--config', help='Configuration file')
+parser.add_argument('-d', '--debug', action='store_true', help='Print debug info')
+parser.add_argument('-r', '--region', action='store_true', help='AWS region')
+parser.add_argument('-t', '--instance-type', action='store_true', help='EC2 instance type')
+parser.add_argument('-s', '--subnet-id', action='store_true',  help='AWS subnet id')
+parser.add_argument('-n', '--image-name', action='store_true',  help='AMI image name')
+parser.add_argument('-i', '--image-id', action='store_true',  help='AMI image ID')
+parser.add_argument('-u', '--image-user', action='store_true',  help='AMI image user')
+args = parser.parse_args()
+
+# Create formatter
+try:
+    import colorlog
+    formatter = colorlog.ColoredFormatter("[%(log_color)s%(levelname)-8s%(reset)s] %(log_color)s%(message)s%(reset)s")
+except ImportError:
+    formatter = logging.Formatter("[%(levelname)-8s] %(message)s")
+
+# Create console handle
+console = logging.StreamHandler()
+console.setFormatter(formatter)
+
+loglvl = logging.WARN
+if args.debug:
+    loglvl = logging.DEBUG
+
+# Create logger
+logger = logging.getLogger(__name__)
+logger.setLevel(loglvl)
+logger.addHandler(console)
+
+# Get configuration
+config = ConfigParser.ConfigParser()
+ 
+# Set defaults
+config.add_section('main')
+config.set('main', 'host_tag', 'docker-build-ami')
+config.set('main', 'key_dir', '~/.ssh')
+config.set('main', 'tmp_dir', '/tmp')
+config.set('main', 'image_name', 'docker-build-ami')
+config.set('main', 'region', 'us-west-1')
+config.set('main', 'instance_type', 'm3.medium')
+config.set('main', 'subnet_id', None)
+config.set('main', 'image_id', 'ami-e4ff5c93')
+config.set('main', 'image_user', 'centos')
+
+# Load config
+cfile = None
+if args.config:
+    if isfile(expanduser(args.config)):
+        cfile = expanduser(args.config)
+    else:
+        logger.error('Config file doesn\'t exist: {0}'.format(init_args.config))
+        exit(1)
+elif isfile(expanduser('~/.docker-build-ami.conf')):
+    cfile = expanduser('~/.docker-build-ami.conf')
+elif isfile('/etc/docker-build-ami.conf'):
+    cfile = '/etc/docker-build-ami.conf'
+
+if cfile and isfile(cfile):
+    logger.info("Loading config file: {0}".format(cfile))
+    config.read(cfile)
+
+region = config.get('main', 'region')
+if args.region:
+    region = args.region
+
+instance_type = config.get('main', 'instance_type')
+if args.instance_type:
+    instance_type = args.instance_type
+
+subnet_id = config.get('main', 'subnet_id')
+if args.subnet_id:
+    subnet_id = args.subnet_id
+
+image_name = config.get('main', 'image_name')
+if args.image_name:
+    image_name = args.image_name
+
+ami_id = config.get('main', 'image_id')
+if args.image_id:
+    ami_id = args.image_id
+
+user = config.get('main', 'image_user')
+if args.image_user:
+    user = args.image_user
+
+host_tag = config.get('main', 'host_tag')
+
+tmp_dir = config.get('main', 'tmp_dir')
+key_dir = config.get('main', 'tmp_dir')
+key_name = str(uuid.uuid4())
+key_path = expanduser(join(key_dir, key_name + '.pem'))
+
+fn = 'Dockerfile'
+step = 0        
+cont = False
+cmd = ''
+
+if not isfile(fn):
+    logger.critical('There needs to be a Dockerfile in the current directory')
+    exit(1)
+
+create_tar_gz()
+
+try:
+    conn = boto.ec2.connect_to_region(region)
+except:
+    logger.critical('Failed to connec to EC2')
+    exit(1)
+
+key_pair = conn.create_key_pair(key_name)
+key_pair.save(key_dir)
+
+reservation = conn.run_instances(ami_id, key_name=key_name, instance_type=instance_type, subnet_id=subnet_id)
+
+print 'Reservation ID: %s' % reservation.id
+
+for r in conn.get_all_instances():
+    if r.id == reservation.id:
+        break
+
+instance = r.instances[0]
+instance.add_tag('Name', host_tag)
+
+print 'ID: %s' % instance.id
+print 'IP: %s' % instance.private_ip_address
+print 'SSH KEY: %s' % key_path
+
+stdout.write('Waiting for instance status running.')
+stdout.flush()
+while instance.state != 'running':
+    stdout.write('.')
+    stdout.flush()
+    time.sleep(5)
+    instance.update()
+
+stdout.write('\nWaiting for SSH to become ready.')
+stdout.flush()
+while not check_port(instance.private_ip_address, 22):
+    stdout.write('.')
+    stdout.flush()
+    time.sleep(5)
+
+print '\nConnect to host'
+print 'User: %s, Key: %s' % (user, key_path)
+
+key = paramiko.RSAKey.from_private_key_file(key_path)
+c = paramiko.SSHClient()
+c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+c.connect(hostname=instance.private_ip_address, username=user, pkey=key)
+
+# Copy tar.gz
+sftp = c.open_sftp()
+print sftp
+print 'src: ' + tmp_dir + '/docker-build-ami.tar.gz' + ' dst: /tmp'
+sftp.put(tmp_dir + '/docker-build-ami.tar.gz', '/tmp/docker-build-ami.tar.gz')
+sftp.close()
+
+# Untar tar.gz
+run(c, step, False, 'mkdir /tmp/docker-build-ami; tar -xzf /tmp/docker-build-ami.tar.gz -C /tmp/docker-build-ami')
+step += 1
+
+skip = False
+with open(fn) as fp:
+    content = fp.read()
+    for line in content.splitlines():
+        if cont:
+            cmd += line.lstrip()
+            if line.rstrip().rfind('\\') != (len(line.rstrip()) - 1):
+                cont = False
+                run(c, step, skip, cmd)
+                skip = False
+                cmd = ''
+                step += 1
+
+        elif line.find('RUN ') == 0:
+            cmd += line.lstrip('RUN ')
+            if line.rfind('\\') == len(line) - 1:
+                cont = True
+            else:
+                run(c, step, skip, cmd)
+                skip = False
+                cmd = ''
+                step += 1
+
+        elif line.find('COPY ') == 0:
+            run(c, step, skip, 'cp -rf /tmp/docker-build-ami/' + line.lstrip('COPY '))
+            skip = False
+            step += 1
+
+        elif line.find('#SKIP') == 0:
+            skip = True
+
+c.close()
+conn.delete_key_pair(key_name)
+os.remove(key_path)
+
+print "Create AMI from instance: %s" % instance.id
+image_id = instance.create_image(image_name + '-%s' % datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+image = conn.get_image(image_id)
+
+while image.state == 'pending':
+    stdout.write('.')
+    stdout.flush()
+    time.sleep(5)
+    image.update()
+
+print "Created image: %s" % image_id
+print "Terminate instance: %s" % instance.id
+instance.terminate()

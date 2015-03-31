@@ -1,0 +1,6 @@
+argparse
+ConfigParser
+logging
+import boto
+import paramiko
+colorlog
