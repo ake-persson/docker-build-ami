@@ -45,8 +45,6 @@ def run(c, step, skip, cmd):
         print 'Skipping'
         return
     print color.YELLOW
-#    stdin, stdout, stderr = c.exec_command('sudo -s -- <<EOF\nset -ex\n' + pipes.quote(cmd) + '\nEOF', get_pty=True)
-#    stdin, stdout, stderr = c.exec_command('set -ex; sudo -i ' + pipes.quote(cmd), get_pty=True)
     stdin, stdout, stderr = c.exec_command('set -ex; echo ' + pipes.quote(cmd) + ' | sudo -i --', get_pty=True)
     print stdout.read()
     print stderr.read()
@@ -61,12 +59,12 @@ def run(c, step, skip, cmd):
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--config', help='Configuration file')
 parser.add_argument('-d', '--debug', action='store_true', help='Print debug info')
-parser.add_argument('-r', '--region', action='store_true', help='AWS region')
-parser.add_argument('-t', '--instance-type', action='store_true', help='EC2 instance type')
-parser.add_argument('-s', '--subnet-id', action='store_true',  help='AWS subnet id')
-parser.add_argument('-n', '--image-name', action='store_true',  help='AMI image name')
-parser.add_argument('-i', '--image-id', action='store_true',  help='AMI image ID')
-parser.add_argument('-u', '--image-user', action='store_true',  help='AMI image user')
+parser.add_argument('-r', '--region', help='AWS region')
+parser.add_argument('-t', '--instance-type', help='EC2 instance type')
+parser.add_argument('-s', '--subnet-id', help='AWS subnet id')
+parser.add_argument('-n', '--image-name', help='AMI image name')
+parser.add_argument('-i', '--image-id', help='AMI image ID')
+parser.add_argument('-u', '--image-user', help='AMI image user')
 args = parser.parse_args()
 
 # Create formatter
