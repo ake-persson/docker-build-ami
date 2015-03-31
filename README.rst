@@ -3,23 +3,12 @@ docker-build-ami
 
 Build Amazon EC2 AMI image using a Dockerfile
 
-Beware this is a work in progress, it work's but it's in need of a rewrite.
-
-Restrictions
-============
+Limitations
+===========
 - Only support operations RUN, COPY at the moment
-- Doesn't correctly quote Bash $var at moment
 
 Configuration
 =============
-
-Requires a ~/.boto config file for Credentials:
-
-.. code-block::
-
-    [Credentials]
-    aws_access_key_id = <access key>
-    aws_secret_access_key = <secret key>
 
 There is a separate config file for the script in either "/etc/docker-build-ami.conf" or "~/.docker-build-ami.conf".
 
@@ -40,6 +29,13 @@ There is a separate config file for the script in either "/etc/docker-build-ami.
     # Subnet ID
     # subnet_id = subnet-123abc45
 
+    # AWS access key id
+    # aws_access_key_id = DFSDF3HGDF4SDSD1DDFF
+
+    # AWS secret access key
+    # aws_secret_access_key = 3riljdsf5SDFSDvsdfds452sdSDFDfsdf44SDFdR
+
+
 Usage
 =====
 
@@ -59,7 +55,3 @@ Usage
       -i, --image-id        AMI image ID
       -u, --image-user      AMI image user
 
-Roadmap
-=======
-- Move credentials to config file
-- Rewrite and cleanup

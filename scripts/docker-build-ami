@@ -14,6 +14,7 @@ import uuid
 import datetime
 import tarfile
 import glob
+import pipes
 
 class color:
     RED = '\033[91m'
@@ -38,14 +39,15 @@ def create_tar_gz():
         tar.add(name)
     tar.close()
 
-# Need to quote $var
 def run(c, step, skip, cmd):
-    print '--> {0}Step: {1} Operation: RUN{2}\n{3}'.format(color.YELLOW, step, color.CLEAR, cmd)
+    print '--> {0}Step: {1} Operation: RUN{2}\n{3}'.format(color.YELLOW, step, color.CLEAR, 'set -ex; echo ' + pipes.quote(cmd) + ' | sudo -i --')
     if skip:
         print 'Skipping'
         return
     print color.YELLOW
-    stdin, stdout, stderr = c.exec_command('sudo -s -- <<EOF\nset -eux\n' + cmd + '\nEOF', get_pty=True)
+#    stdin, stdout, stderr = c.exec_command('sudo -s -- <<EOF\nset -ex\n' + pipes.quote(cmd) + '\nEOF', get_pty=True)
+#    stdin, stdout, stderr = c.exec_command('set -ex; sudo -i ' + pipes.quote(cmd), get_pty=True)
+    stdin, stdout, stderr = c.exec_command('set -ex; echo ' + pipes.quote(cmd) + ' | sudo -i --', get_pty=True)
     print stdout.read()
     print stderr.read()
     print color.CLEAR
@@ -101,6 +103,8 @@ config.set('main', 'instance_type', 'm3.medium')
 config.set('main', 'subnet_id', None)
 config.set('main', 'image_id', 'ami-e4ff5c93')
 config.set('main', 'image_user', 'centos')
+config.set('main', 'aws_access_key_id', None)
+config.set('main', 'aws_secret_access_key', None)
 
 # Load config
 cfile = None
@@ -143,6 +147,16 @@ user = config.get('main', 'image_user')
 if args.image_user:
     user = args.image_user
 
+aws_access_key_id = config.get('main', 'aws_access_key_id')
+if not aws_access_key_id:
+    logger.critical('You need to specify a AWS Access Key ID')
+    exit(1)
+
+aws_secret_access_key = config.get('main', 'aws_secret_access_key')
+if not aws_secret_access_key:
+    logger.critical('You need to specify a AWS Secret Access Key')
+    exit(1)
+
 host_tag = config.get('main', 'host_tag')
 
 tmp_dir = config.get('main', 'tmp_dir')
@@ -162,9 +176,9 @@ if not isfile(fn):
 create_tar_gz()
 
 try:
-    conn = boto.ec2.connect_to_region(region)
+    conn = boto.ec2.connect_to_region(region, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 except:
-    logger.critical('Failed to connec to EC2')
+    logger.critical('Failed to connect to EC2')
     exit(1)
 
 key_pair = conn.create_key_pair(key_name)
