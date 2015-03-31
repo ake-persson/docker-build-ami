@@ -223,7 +223,6 @@ c.connect(hostname=instance.private_ip_address, username=user, pkey=key)
 
 # Copy tar.gz
 sftp = c.open_sftp()
-print sftp
 print 'src: ' + tmp_dir + '/docker-build-ami.tar.gz' + ' dst: /tmp'
 sftp.put(tmp_dir + '/docker-build-ami.tar.gz', '/tmp/docker-build-ami.tar.gz')
 sftp.close()
@@ -277,6 +276,6 @@ while image.state == 'pending':
     time.sleep(5)
     image.update()
 
-print "Created image: %s" % image_id
+print "\nCreated image: %s" % image_id
 print "Terminate instance: %s" % instance.id
 instance.terminate()
