@@ -35,7 +35,6 @@ There is a separate config file for the script in either "/etc/docker-build-ami.
     # AWS secret access key
     # aws_secret_access_key = 3riljdsf5SDFSDvsdfds452sdSDFDfsdf44SDFdR
 
-
 Usage
 =====
 

@@ -19,12 +19,11 @@ CLASSIFIERS = [
     'Operating System :: POSIX :: Linux',
     'Operating System :: MacOS :: MacOS X',
     'Programming Language :: Python',
-    'Topic :: Database',
 ]
 
 setup(
     name             = 'docker-build-ami',
-    version          = '0.2.0',
+    version          = '0.2.1',
 
     description      = 'Build Amazon EC2 AMI image using a Dockerfile',
     long_description = open("README.rst").read(),
