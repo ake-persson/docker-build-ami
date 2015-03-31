@@ -24,7 +24,7 @@ CLASSIFIERS = [
 
 setup(
     name             = 'docker-build-ami',
-    version          = '0.1.1',
+    version          = '0.1.5',
 
     description      = 'Build Amazon EC2 AMI image using a Dockerfile',
     long_description = open("README.rst").read(),
