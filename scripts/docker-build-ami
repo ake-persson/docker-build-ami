@@ -18,10 +18,9 @@ import pipes
 import re
 
 class color:
-    RED = '\033[0;31m'
-    YELLOW = '\033[0;33m'
-    BLUE = '\033[0;34m'
-    DARK_GREY = '\033[1;30'
+    RED = '\033[31m'
+    YELLOW = '\033[33m'
+    DARK_GREY = '\033[90m'
     CLEAR = '\033[0m'
 
 def check_port(host, port):
