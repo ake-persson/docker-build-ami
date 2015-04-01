@@ -54,3 +54,15 @@ Usage
       -i, --image-id        AMI image ID
       -u, --image-user      AMI image user
 
+Behaviour
+=========
+
+The following demonstrates the behaviour of ENV variables in Dockerfile:
+
+.. code-block::
+
+    FROM centos:centos7
+    ENV message HELLO WORLD
+    RUN echo $message; message=BYE WORLD; echo $message
+
+This suggests it doesn't do substitution but rather passes them along as ENV variables for the Shell.
