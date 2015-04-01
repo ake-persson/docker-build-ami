@@ -18,9 +18,10 @@ import pipes
 import re
 
 class color:
-    RED = '\033[31m'
-    YELLOW = '\033[33m'
-    BLUE = '\033[34m'
+    RED = '\033[0;31m'
+    YELLOW = '\033[0;33m'
+    BLUE = '\033[0;34m'
+    DARK_GREY = '\033[1;30'
     CLEAR = '\033[0m'
 
 def check_port(host, port):
@@ -69,7 +70,7 @@ def parse_dockerfile(ssh, fn):
                     mline = False
                     print 'Step %s : RUN %s' % (step, cmd)
                     if skip:
-                        print color.BLUE + 'Skipping for AWS...' + color.CLEAR
+                        print color.DARK_GREY + 'Skipping for AWS...' + color.CLEAR + '\n'
                         skip = False
                     else:
                         ssh_cmd(ssh, '%s%s' % (env, cmd))
@@ -96,7 +97,7 @@ def parse_dockerfile(ssh, fn):
                 else:
                     print 'Step %s : RUN %s' % (step, cmd)
                     if skip:
-                        print "Skipping for AWS..."
+                        print color.DARK_GREY + 'Skipping for AWS...' + color.CLEAR + '\n'
                         skip = False
                     else:
                         ssh_cmd(ssh, '%s%s' % (env, cmd))
@@ -107,7 +108,7 @@ def parse_dockerfile(ssh, fn):
                 op, src, dst = re.split(' +', line, 2)
                 print 'Step %s : COPY %s %s' % (step, src, dst)
                 if skip:
-                    print color.BLUE + 'Skipping for AWS...' + color.CLEAR
+                    print color.DARK_GREY + 'Skipping for AWS...' + color.CLEAR + '\n'
                     skip = False
                 else:
                     ssh_cmd(ssh, '%scp -rf /tmp/docker-build-ami/%s %s' % (env, src, dst))
@@ -118,7 +119,7 @@ def parse_dockerfile(ssh, fn):
                 op, src, dst = re.split(' +', line, 2)
                 print 'Step %s : ADD %s %s' % (step, src, dst)
                 if skip:
-                    print color.BLUE + 'Skipping for AWS...' + color.CLEAR
+                    print color.DARK_GREY + 'Skipping for AWS...' + color.CLEAR + '\n'
                     skip = False
                 else:
                     if re.match('.*\.(tar|tar\.gz|tar\.bz|tar\.xz)$', src):
