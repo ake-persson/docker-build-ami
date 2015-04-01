@@ -15,10 +15,10 @@ There is a separate config file for the script in either "/etc/docker-build-ami.
 .. code-block::
 
     # Temporary directory
-    tmp_dir = /tmp
+    # tmp_dir = /tmp
 
     # Name tag for host building AMI image
-    # host_tag = 'docker-build-ami'
+    # host_tag = docker-build-ami
 
     # Region
     # region = eu-west-1
