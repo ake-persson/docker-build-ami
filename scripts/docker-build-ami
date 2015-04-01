@@ -42,10 +42,12 @@ def create_archive(tmp_dir):
 
 def ssh_cmd(ssh, cmd):
     stdin, stdout, stderr = ssh.exec_command('set -ex; echo %s | sudo -i --' % pipes.quote(cmd), get_pty=True)
-    if stdout.read():
-        print color.YELLOW + stdout.read() + color.CLEAR
-    if stderr.read():
-        print color.RED + stderr.read() + color.CLEAR
+    output = stdout.read()
+    if output:
+        print color.YELLOW + output + color.CLEAR
+    output = stderr.read()
+    if output:
+        print color.RED + output + color.CLEAR
 
     ecode = stdout.channel.recv_exit_status()
     if ecode != 0:
@@ -66,7 +68,7 @@ def parse_dockerfile(ssh, fn):
                     mline = False
                     print 'Step %s : RUN %s' % (step, cmd)
                     if skip:
-                        print "Skipping for AWS..."
+                        print color.BLUE + 'Skipping for AWS...' + color.CLEAR
                         skip = False
                     else:
                         ssh_cmd(ssh, '%s%s' % (env, cmd))
@@ -232,8 +234,6 @@ if not isfile('Dockerfile'):
     logger.critical('There needs to be a Dockerfile in the current directory')
     exit(1)
 
-create_archive(tmp_dir)
-
 try:
     ec2 = boto.ec2.connect_to_region(region, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 except:
@@ -279,15 +279,22 @@ ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 ssh.connect(hostname=instance.private_ip_address, username=user, pkey=key)
 
+# Create archive
+print "Create archive..."
+create_archive(tmp_dir)
+
 # Copy archive
+print "Copy archive..."
 sftp = ssh.open_sftp()
 sftp.put(tmp_dir + '/docker-build-ami.tar.gz', '/tmp/docker-build-ami.tar.gz')
 sftp.close()
 
 # Untar archive
+print 'Untar archive...'
 ssh_cmd(ssh, 'mkdir /tmp/docker-build-ami; tar -xzf /tmp/docker-build-ami.tar.gz -C /tmp/docker-build-ami')
 
 # Parse Dockerfile
+print 'Parse Dockerfile...'
 parse_dockerfile(ssh, 'Dockerfile')
 
 ssh.close()
