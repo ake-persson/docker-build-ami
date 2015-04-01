@@ -18,9 +18,9 @@ import pipes
 import re
 
 class color:
-    RED = '\031[91m'
+    RED = '\033[31m'
     YELLOW = '\033[33m'
-    BLUE = '\033[34'
+    BLUE = '\033[34m'
     CLEAR = '\033[0m'
 
 def check_port(host, port):
@@ -107,7 +107,7 @@ def parse_dockerfile(ssh, fn):
                 op, src, dst = re.split(' +', line, 2)
                 print 'Step %s : COPY %s %s' % (step, src, dst)
                 if skip:
-                    print "Skipping for AWS..."
+                    print color.BLUE + 'Skipping for AWS...' + color.CLEAR
                     skip = False
                 else:
                     ssh_cmd(ssh, '%scp -rf /tmp/docker-build-ami/%s %s' % (env, src, dst))
@@ -118,7 +118,7 @@ def parse_dockerfile(ssh, fn):
                 op, src, dst = re.split(' +', line, 2)
                 print 'Step %s : ADD %s %s' % (step, src, dst)
                 if skip:
-                    print "Skipping for AWS..."
+                    print color.BLUE + 'Skipping for AWS...' + color.CLEAR
                     skip = False
                 else:
                     if re.match('.*\.(tar|tar\.gz|tar\.bz|tar\.xz)$', src):
