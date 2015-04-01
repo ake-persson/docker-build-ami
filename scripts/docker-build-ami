@@ -62,7 +62,7 @@ def parse_dockerfile(ssh, fn):
             # Multi-line command
             if mline:
                 cmd += line.lstrip()
-                if not re.match('.*\\$\s*', line):
+                if not re.match('.*\\\s*$', line):
                     mline = False
                     print 'Step %s : RUN %s' % (step, cmd)
                     ssh_cmd(ssh, '%s%s' % (env, cmd))
