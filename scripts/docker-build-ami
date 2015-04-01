@@ -41,12 +41,11 @@ def create_archive(tmp_dir):
     tar.close()
 
 def ssh_cmd(ssh, cmd):
-    print color.YELLOW
     stdin, stdout, stderr = ssh.exec_command('set -ex; echo %s | sudo -i --' % pipes.quote(cmd), get_pty=True)
-    print stdout.read()
-    print color.RED
-    print stderr.read()
-    print color.CLEAR
+    if stdout.read():
+        print color.YELLOW + stdout.read() + color.CLEAR
+    if stderr.read():
+        print color.RED + stderr.read() + color.CLEAR
 
     ecode = stdout.channel.recv_exit_status()
     if ecode != 0:
@@ -56,6 +55,7 @@ def ssh_cmd(ssh, cmd):
 def parse_dockerfile(ssh, fn):
     env = ''
     step = 0
+    skip = False
     mline = False
     with open(fn) as fp:
         for line in fp.read().splitlines():
@@ -65,8 +65,16 @@ def parse_dockerfile(ssh, fn):
                 if not re.match('.*\\\s*$', line):
                     mline = False
                     print 'Step %s : RUN %s' % (step, cmd)
-                    ssh_cmd(ssh, '%s%s' % (env, cmd))
+                    if skip:
+                        print "Skipping for AWS..."
+                        skip = False
+                    else:
+                        ssh_cmd(ssh, '%s%s' % (env, cmd))
                     step += 1
+
+            # Skip next instruction
+            elif re.match('^#\s*AWS-SKIP.*$', line):
+                    skip = True
 
             # Skip empty lines and  comments
             elif re.match('^(#.*|)$', line):
@@ -84,24 +92,36 @@ def parse_dockerfile(ssh, fn):
                     mline = True
                 else:
                     print 'Step %s : RUN %s' % (step, cmd)
-                    ssh_cmd(ssh, '%s%s' % (env, cmd))
+                    if skip:
+                        print "Skipping for AWS..."
+                        skip = False
+                    else:
+                        ssh_cmd(ssh, '%s%s' % (env, cmd))
                     step += 1
 
             # Copy command
             elif re.match('^COPY +', line, re.IGNORECASE):
                 op, src, dst = re.split(' +', line, 2)
                 print 'Step %s : COPY %s %s' % (step, src, dst)
-                ssh_cmd(ssh, '%scp -rf /tmp/docker-build-ami/%s %s' % (env, src, dst))
+                if skip:
+                    print "Skipping for AWS..."
+                    skip = False
+                else:
+                    ssh_cmd(ssh, '%scp -rf /tmp/docker-build-ami/%s %s' % (env, src, dst))
                 step += 1
 
             # Add command
             elif re.match('ADD +', line, re.IGNORECASE):
                 op, src, dst = re.split(' +', line, 2)
                 print 'Step %s : ADD %s %s' % (step, src, dst)
-                if re.match('.*\.(tar|tar\.gz|tar\.bz|tar\.xz)$', src):
-                    ssh_cmd(ssh, '%star -xf /tmp/docker-build-ami/%s -C %s' % (env, src, dst))
+                if skip:
+                    print "Skipping for AWS..."
+                    skip = False
                 else:
-                    ssh_cmd(ssh, '%scp -rf /tmp/docker-build-ami/%s %s' % (env, src, dst))
+                    if re.match('.*\.(tar|tar\.gz|tar\.bz|tar\.xz)$', src):
+                        ssh_cmd(ssh, '%star -xf /tmp/docker-build-ami/%s -C %s' % (env, src, dst))
+                    else:
+                        ssh_cmd(ssh, '%scp -rf /tmp/docker-build-ami/%s %s' % (env, src, dst))
                 step += 1
 
 # Get arguments
