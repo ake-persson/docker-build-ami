@@ -18,7 +18,7 @@ import pipes
 import re
 
 class color:
-    RED = '\033[91m'
+    RED = '\031[91m'
     YELLOW = '\033[33m'
     BLUE = '\033[34'
     CLEAR = '\033[0m'
