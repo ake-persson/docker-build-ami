@@ -5,7 +5,7 @@ Build Amazon EC2 AMI image using a Dockerfile
 
 Limitations
 ===========
-- Only support operations RUN, COPY at the moment
+Only supports instructions ENV, RUN, COPY and ADD, other instructions will just be ignored.
 
 Configuration
 =============
@@ -50,19 +50,7 @@ Usage
       -r, --region          AWS region
       -t, --instance-type   EC2 instance type
       -s, --subnet-id       AWS subnet id
-      -n, --image-name      AMI image name
-      -i, --image-id        AMI image ID
+      -n, --image-name      Target AMI image name
+      -i, --image-id        Source AMI image ID
       -u, --image-user      AMI image user
 
-Behaviour
-=========
-
-The following demonstrates the behaviour of ENV variables in Dockerfile:
-
-.. code-block::
-
-    FROM centos:centos7
-    ENV message HELLO WORLD
-    RUN echo $message; message=BYE WORLD; echo $message
-
-This suggests it doesn't do substitution but rather passes them along as ENV variables for the Shell.
