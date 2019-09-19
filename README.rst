@@ -20,7 +20,7 @@ There is a separate config file for the script in either "/etc/docker-build-ami.
     # tmp_dir = /tmp
 
     # Name tag for host building AMI image
-    # host_tag = docker-build-ami
+    # host_tag = 'docker-build-ami'
 
     # Region
     # region = eu-west-1
@@ -31,11 +31,30 @@ There is a separate config file for the script in either "/etc/docker-build-ami.
     # Subnet ID
     # subnet_id = subnet-123abc45
 
+    # Security Groups
+    # security_group_ids = ["sg-1234", "sg-23456"]
+
+    # Host Tags - additional tags to add to EC2 host
+    # host_tags = [{"Key": "foo", "Value": "bar"}]
+
     # AWS access key id
     # aws_access_key_id = DFSDF3HGDF4SDSD1DDFF
 
     # AWS secret access key
-    # aws_secret_access_key = 3riljdsf5SDFSDvsdfds452sdSDFDfsdf44SDFdR
+    # aws_secret_access_key = 3riljdsf5SDFSDvsdfds452sdSDFDfsdf44SDFdRA
+
+    # Base image from which the output image is built
+    # image_id = ami-0df67e2624dedbae1
+
+    # EC2 user used to build instances (usually AMI dependent)
+    # image_user = ubuntu
+
+    # The AMI Name of the output image
+    # image_name = ubuntu-test
+
+    # Image Tags - tags to add to AMI
+    # image_tags = [{"Key": "foo", "Value": "bar"}]
+
 
 Usage
 =====

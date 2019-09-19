@@ -1,21 +1,24 @@
 #!/usr/bin/env python
 
 import argparse
-import configparser
-import logging
 import boto3
-import os
-from os.path import expanduser, join, isfile
-import time
-import socket
-from sys import stdout
-import paramiko
-import uuid
+import configparser
 import datetime
-import tarfile
 import glob
+import json
+import logging
+import os
+import paramiko
 import pipes
 import re
+import socket
+import tarfile
+import time
+import uuid
+
+from os.path import expanduser, join, isfile
+from sys import stdout
+
 
 class color:
     RED = '\033[31m'
@@ -161,7 +164,7 @@ logger.addHandler(console)
 
 # Get configuration
 config = configparser.ConfigParser()
- 
+
 # Set defaults
 config.add_section('main')
 config.set('main', 'host_tag', 'docker-build-ami')
@@ -174,6 +177,9 @@ config.set('main', 'image_id', 'ami-e4ff5c93')
 config.set('main', 'image_user', 'centos')
 config.set('main', 'aws_access_key_id', '')
 config.set('main', 'aws_secret_access_key', '')
+config.set('main', 'security_group_ids', '[]')
+config.set('main', 'host_tags', '[]')
+config.set('main', 'image_tags', '[]')
 
 # Load config
 cfile = None
@@ -226,6 +232,10 @@ if not aws_secret_access_key:
     logger.critical('You need to specify a AWS Secret Access Key')
     exit(1)
 
+security_group_ids = json.loads(config.get('main', 'security_group_ids'))
+host_tags = json.loads(config.get('main', 'host_tags'))
+image_tags = json.loads(config.get('main', 'image_tags'))
+
 host_tag = config.get('main', 'host_tag')
 tmp_dir = config.get('main', 'tmp_dir')
 key_name = str(uuid.uuid4())
@@ -244,19 +254,20 @@ except:
 key_pair = ec2.create_key_pair(KeyName=key_name)
 with open(key_path, 'w') as f:
     f.write(key_pair['KeyMaterial'])
-
+tags = host_tags + [
+  {'Key': 'Name', 'Value': host_tag},
+]
+tag_spec = [
+  {'ResourceType': 'instance', 'Tags': tags},
+  {'ResourceType': 'volume', 'Tags': tags},
+]
 reservation = ec2.run_instances(ImageId=ami_id, KeyName=key_name, InstanceType=instance_type, SubnetId=subnet_id, \
-    MinCount=1, MaxCount=1)
+    MinCount=1, MaxCount=1, TagSpecifications=tag_spec, SecurityGroupIds=security_group_ids)
 
 for r in ec2.describe_instances()['Reservations']:
     if r['ReservationId'] == reservation['ReservationId']:
         break
-
 instance = r['Instances'][0]
-tags = [
-  {'Key': 'Name', 'Value': host_tag},
-]
-ec2.create_tags(Resources = [instance['InstanceId']], Tags=tags)
 
 print('Instance: %s' % instance['InstanceId'])
 print('Instance IP: %s' % instance['PrivateIpAddress'])
@@ -311,6 +322,7 @@ os.remove(key_path)
 
 print(f'Create AMI from instance: {instance_obj.instance_id}')
 image_obj = instance_obj.create_image(Name=f'{image_name}-{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}')
+ec2.create_tags(Resources = [image_obj.image_id], Tags=image_tags + [{'Key': 'Name', 'Value': image_name}])
 
 while image_obj.state == 'pending':
     stdout.write('.')
