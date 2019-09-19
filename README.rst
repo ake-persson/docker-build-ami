@@ -14,7 +14,7 @@ There is a separate config file for the script in either "/etc/docker-build-ami.
 
 .. code-block::
 
-    [main]
+    # [main]
 
     # Temporary directory
     # tmp_dir = /tmp
