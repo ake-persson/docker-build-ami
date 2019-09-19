@@ -1,6 +1,7 @@
-argparse
-ConfigParser
-boto3
-paramiko
-colorlog
-cryptography
+boto3>=1.9.230
+configparser>=4.0.2
+colorlog>=4.0.2
+cryptography>=2.7
+flake8>=3.7.8
+paramiko>=2.6.0
+pre-commit>=1.18.3

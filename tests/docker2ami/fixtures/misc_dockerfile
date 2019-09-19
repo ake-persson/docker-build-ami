@@ -1,0 +1,12 @@
+# https://github.com/phusion/passenger-docker
+# https://hub.docker.com/r/phusion/passenger-full/
+FROM phusion/passenger-full:1.0.6
+LABEL maintainer "Me <me@me.com>"
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+VOLUME $PIP_OVERRIDE_DIR
+CMD ["/sbin/my_init"]
+
+# aws-skip
+# AWS-SKIP
