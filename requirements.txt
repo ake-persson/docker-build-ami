@@ -1,6 +1,6 @@
 argparse
 ConfigParser
-logging
-boto
+boto3
 paramiko
 colorlog
+cryptography
