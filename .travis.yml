@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+# command to install dependencies
+install:
+  - pip install -r requirements-test.txt
+  - sudo ./setup.py install
+# command to run tests
+script:
+  - pytest --cov=docker2ami

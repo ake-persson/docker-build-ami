@@ -1,4 +1,4 @@
 -r requirements.txt
-pytest
-pytest-cov
-pytest-mock
+pytest>=5.1.2
+pytest-cov>=2.8.1
+pytest-mock>=1.10.4
