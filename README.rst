@@ -85,7 +85,14 @@ Usage
 
 Running Tests
 =============
+
 .. code-block::
 
+    # Run these lines once
+    pip3 install -r requirements-test.txt
+    pre-commit install
+
+    # Run these lines to check code formatting and correctness
+    flake8 --show-source --filename="\*.py" .
     pytest --cov=docker2ami
 

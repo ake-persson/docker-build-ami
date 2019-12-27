@@ -1,4 +1,4 @@
-   docker-build-ami - Expose hardware info through HTTP
+   docker-build-ami - Build and AMIs from Dockerfiles
 
    Copyright (c) 2013 Michael Persson
 
