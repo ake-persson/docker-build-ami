@@ -175,7 +175,8 @@ class AmiBuilder(object):
 
     def run_cmd(self, env, cmd):
         stdin, stdout, stderr = self._ssh.exec_command(
-          f'{env} set -ex; echo {shlex.quote(cmd)} | sudo -i --', get_pty=True)
+          f'set -ex; echo {shlex.quote(env)} {shlex.quote(cmd)} | sudo -i --',
+          get_pty=True)
         output = stdout.read()
         if output:
             print(f'{Color.YELLOW}{str(output, "utf8")}{Color.CLEAR}')
