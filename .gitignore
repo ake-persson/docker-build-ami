@@ -1,3 +1,7 @@
 *.pyc
+*.swp
+.coverage
+__pycache__
+build/
 dist/
 docker_build_ami.egg-info/

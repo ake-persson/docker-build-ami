@@ -61,17 +61,38 @@ Usage
 
 .. code-block::
 
-    usage: docker-build-ami [-h] [-c CONFIG] [-d] [-r] [-t] [-s] [-n] [-i] [-u]
+        usage: docker-build-ami [-h] [-c CONFIG] [-d] [-r REGION] [-t INSTANCE_TYPE]
+                                [-s SUBNET_ID] [-n IMAGE_NAME] [-i IMAGE_ID]
+                                [-u IMAGE_USER]
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -c CONFIG, --config CONFIG
-                        Configuration file
-      -d, --debug           Print debug info
-      -r, --region          AWS region
-      -t, --instance-type   EC2 instance type
-      -s, --subnet-id       AWS subnet id
-      -n, --image-name      Target AMI image name
-      -i, --image-id        Source AMI image ID
-      -u, --image-user      AMI image user
+        optional arguments:
+          -h, --help            show this help message and exit
+          -c CONFIG, --config CONFIG
+                                Configuration file
+          -d, --debug           Print debug info
+          -r REGION, --region REGION
+                                AWS region
+          -t INSTANCE_TYPE, --instance-type INSTANCE_TYPE
+                                EC2 instance type
+          -s SUBNET_ID, --subnet-id SUBNET_ID
+                                AWS subnet id
+          -n IMAGE_NAME, --image-name IMAGE_NAME
+                                Target AMI image name
+          -i IMAGE_ID, --image-id IMAGE_ID
+                                Source AMI image ID
+          -u IMAGE_USER, --image-user IMAGE_USER
+                                AMI image user
+
+Running Tests
+=============
+
+.. code-block::
+
+    # Run these lines once
+    pip3 install -r requirements-test.txt
+    pre-commit install
+
+    # Run these lines to check code formatting and correctness
+    flake8 --show-source --filename="\*.py" .
+    pytest --cov=docker2ami
 

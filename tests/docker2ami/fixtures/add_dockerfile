@@ -1,0 +1,3 @@
+ADD foo bar
+ADD foo .
+AdD  http://www.me.com?foo=bar  hello.txt 

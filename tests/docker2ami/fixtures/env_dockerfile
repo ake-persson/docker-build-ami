@@ -1,0 +1,5 @@
+ENV FOO=BAR
+ENV HOME=/root \
+    TZ=:America/New_York \
+    LANG=EN.UTF-8 \
+    ME_BASE_HOME=/usr/src/me-base
