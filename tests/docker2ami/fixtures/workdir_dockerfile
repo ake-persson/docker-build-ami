@@ -1,0 +1,2 @@
+WORKDIR /home/docker/app
+WorkDir some/folder

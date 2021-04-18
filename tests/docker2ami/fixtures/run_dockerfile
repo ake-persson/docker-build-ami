@@ -1,0 +1,27 @@
+RUN apt-get update
+RUN apt-get upgrade --assume-yes --verbose-versions --option Dpkg::Options::="--force-confold"\
+ && apt-get install --assume-yes --verbose-versions \
+      apt-utils \
+      binfmt-support \
+      build-essential \
+      curl \
+      dnsutils \
+      git \
+      htop \
+      iftop \
+      iotop \
+      iputils-ping \
+      libssl-dev \
+      lsof \
+      man \
+      mlocate \
+      netcat \
+      pkg-config \
+      rsync \
+      strace \
+      sudo \
+      tcpdump \
+      telnet \
+      tzdata \
+      vim \
+      wget

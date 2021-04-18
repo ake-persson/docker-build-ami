@@ -1,0 +1,9 @@
+black
+pycodestyle
+pylint
+flake8>=3.7.8
+pre-commit>=1.18.3
+pytest>=5.1.2
+pytest-cov>=2.8.1
+pytest-mock>=1.10.4
+tox
