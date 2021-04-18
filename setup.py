@@ -34,7 +34,7 @@ with open('README.rst', 'r') as fh:
     long_description = fh.read()
 
 setup(
-    name='docker-build-ami',
+    name='jamieleecho-docker-build-ami',
     version=VERSION,
 
     description='Build Amazon EC2 AMI image using a Dockerfile',
