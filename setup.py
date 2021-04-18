@@ -7,7 +7,7 @@ Setup script for docker-build-ami
 from setuptools import setup, find_packages
 
 # VERSION MUST be defined on line 10
-VERSION = '0.6.0'
+VERSION = '0.7.0'
 
 with open('requirements.txt') as f:
     requires = f.read().splitlines()
