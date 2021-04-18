@@ -5,11 +5,12 @@
   "files": [{
       "path": "./setup.py",
       "line": 10
-  },
+  }],
   "rules": [{
       "trigger": "manual",
       "bump": "minor",
-      "branch": "main",
-      "reset": "build"
+      "branch": "master",
+      "reset": "build",
+      "tag": true
   }]
 }
