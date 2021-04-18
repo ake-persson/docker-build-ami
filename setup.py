@@ -42,7 +42,7 @@ setup(
     long_description_content_type='text/x-rst',
 
     # The project's main homepage.
-    url='https://github.com/mickep76/docker-build-ami.git',
+    url='https://github.com/jamieleecho/docker-build-ami.git',
 
     # Author details
     author='Michael Persson',
